@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# oh-my-cli Main Executable
+
+# Resolve symbolic link to find real path
+if [ -L "$0" ]; then
+    REAL_PATH=$(readlink -f "$0")
+else
+    REAL_PATH="$0"
+fi
+
+BIN_DIR=$(dirname "$REAL_PATH")
+# OCL_PATH is parent of bin directory
+export OCL_PATH=$(dirname "$BIN_DIR")
+
+# Load Core
+if [ -f "$OCL_PATH/lib/core.sh" ]; then
+    source "$OCL_PATH/lib/core.sh"
+else
+    echo "Error: Core library not found at $OCL_PATH/lib/core.sh"
+    exit 1
+fi
+
+# Initialize
+init_ocl
+
+# Command Handling
+cmd="$1"
+shift
+
+case "$cmd" in
+    new)
+        new_project "$@"
+        ;;
+    dev)
+        dev_server
+        ;;
+    build)
+        build_project
+        ;;
+    deploy)
+        deploy_project
+        ;;
+    sync)
+        sync_git
+        ;;
+    ask)
+        ask_ai "$*"
+        ;;
+    review)
+        review_code "$1"
+        ;;
+    fix)
+        fix_code "$1"
+        ;;
+    explain)
+        explain_code "$1"
+        ;;
+    scan)
+        scan_security
+        ;;
+    config)
+        configure_ocl
+        ;;
+    update)
+        check_update
+        ;;
+    help|--help|-h)
+        echo "Usage: ocl <command> [args]"
+        echo ""
+        echo "Commands:"
+        echo "  new <project>    Create new project"
+        echo "  dev              Start dev server"
+        echo "  build            Build project"
+        echo "  deploy           Deploy project"
+        echo "  sync             Sync git"
+        echo "  ask <query>      Ask AI"
+        echo "  review <file>    Review code"
+        echo "  fix <file>       Fix bugs"
+        echo "  explain <file>   Explain code"
+        echo "  scan             Security scan"
+        echo "  config           Configure ocl"
+        echo "  update           Update ocl"
+        ;;
+    *)
+        if [ -z "$cmd" ]; then
+             echo "oh-my-cli version $OCL_VERSION"
+             echo "Run 'ocl help' for usage."
+        else
+            log_error "Unknown command: $cmd"
+            exit 1
+        fi
+        ;;
+esac
